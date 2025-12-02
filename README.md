@@ -7,7 +7,7 @@ Many soccer fans, myself included, want to easily look at career retrospectives 
 ## 2. System Overview
 Course Concepts: This project demonstrates core course concepts, including  REST API design (Flask), LLM inference serving (llama-cpp-python), and database integration (MongoDB).
 
-Architecture Diagram: ![Architecture]()
+Architecture Diagram: ![Architecture](./assets/architecture.png)
 
 Data/Models/Services: 
 
