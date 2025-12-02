@@ -1,26 +1,66 @@
 from flask import Flask, request, jsonify
-from db import get_player, save_summary
-from llm_client import generate_summary
+from pymongo import MongoClient
+from llama_cpp import Llama
+import datetime
+import re
 
+# ----- Flask Setup -----
 app = Flask(__name__)
+
+# ----- MongoDB Setup -----
+client = MongoClient("mongodb://localhost:27017/")
+db = client["soccer_llm"]
+collection = db["player_summaries"]
+
+# ----- Llama (llama-cpp) Setup -----
+model = Llama(model_path="models/llama-3-8b.gguf", n_ctx=2048)
+
+# ----- Helper: Extract Player Name -----
+def extract_name(text):
+    match = re.search(r"[A-Z][a-z]+ [A-Z][a-z]+", text)
+    return match.group(0) if match else None
 
 @app.route("/summarize", methods=["POST"])
 def summarize():
-    data = request.json
-    player_name = data.get("player_name")
+    data = request.get_json()
+    raw_text = data.get("text", "")
 
-    player_doc = get_player(player_name)
-    if not player_doc:
-        return jsonify({"error": "Player not found in database"}), 404
+    player = extract_name(raw_text)
+    if not player:
+        return jsonify({"error": "No recognizable player name found"}), 400
 
-    summary = generate_summary(player_doc)
-    save_summary(player_name, summary)
+    # LLM prompt
+    prompt = f"Describe the career of the soccer player: {player}. Keep it factual."
 
-    return jsonify({"player_name": player_name, "summary": summary})
+    output = model(prompt, max_tokens=500)
+    summary = output["choices"][0]["text"]
+    tokens_used = output.get("usage", {}).get("total_tokens", None)
 
-@app.route("/health")
-def health():
-    return jsonify({"status": "ok"})
+    # Save to MongoDB
+    document = {
+        "player_name": player,
+        "input_text": raw_text,
+        "summary": summary,
+        "model_name": "llama-3-8b.gguf",
+        "timestamp": datetime.datetime.utcnow(),
+        "tokens_used": tokens_used
+    }
+
+    collection.insert_one(document)
+
+    return jsonify({
+        "player": player,
+        "summary": summary
+    })
+
+@app.route("/history/<name>", methods=["GET"])
+def history(name):
+    docs = list(collection.find({"player_name": {"$regex": f"^{name}$", "$options": "i"}}))
+    
+    for d in docs:
+        d["_id"] = str(d["_id"])
+    
+    return jsonify(docs)
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=8080)
+    app.run(debug=True)
