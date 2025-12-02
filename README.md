@@ -49,11 +49,12 @@ Security/Privacy: No external calls take place here; all inference performed in 
 Ops: All logs are stored in MongoDB, Docker Compose manages a multi-service lifecycle, and some known limitations include a cold start time for the Llama 3 model, a CPU latency of ~300–500ms per request, summaries being cut off early, and a possible chance of hallucinations in some of the responses.
 
 ## 5. Results & Evaluation
-Response Screenshots: ![Response Screenschot](./assets/Screenshot_2025-12-02_014114.png)
+Response Screenshots: ![Response Screenschot](./assets/ronaldo_response_prompt.png)
+![Response Screenshot #2](./assets/messi_response_prompt.png)
 
-Time to Build: ![]()
+Time to Build: ![Build Time](./assets/build_time.png)
 
-Example Players in MongoDB ![]()
+Example Players in MongoDB ![MongoDB Storage](./assets/mongodb_storage.png)
 
 ## 6. What's Next
 In the future, I want to add data retrieval through Wikipedia, so players don't have to be inputted manually into MongoDB. On top of this, retrieval-augmented generation (RAG) is also a good next step, which can also be done via Wikipedia. I also want to add an add_player endpoint, so that including players in the database becomes easier. Finally, to make the process more visually appealing, I want to be able to deploy this process to the cloud and make it a visible chatbox (potentially through Azure).
