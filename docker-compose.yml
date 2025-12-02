@@ -1,21 +1,30 @@
-version: '3.9'
-services:
-  api:
-    build: .
-    ports:
-      - "8080:8080"
-    env_file: .env
-    depends_on:
-      - mongo
+version: "3.9"
 
+services:
   mongo:
     image: mongo:6
+    container_name: soccer-mongo
     restart: always
     ports:
       - "27017:27017"
     volumes:
-      - mongo-data:/data/db
+      - mongo_data:/data/db
 
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: soccer-llm-api
+    restart: always
+    depends_on:
+      - mongo
+    ports:
+      - "5000:5000"
+    environment:
+      MONGO_URI: "mongodb://mongo:27017"
+      MODEL_PATH: "/app/models/Meta-Llama-3-8B.Q4_K_M.gguf"
+    volumes:
+      - ./models:/app/models
+      
 volumes:
-  mongo-data:
-
+  mongo_data:
