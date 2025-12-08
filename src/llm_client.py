@@ -12,33 +12,39 @@ llm = Llama(
 
 def generate_player_summary(player_doc):
     prompt = f"""
-You are an expert soccer analyst. Write a concise narrative paragraph about the player below.
+You are an expert soccer analyst. Write a concise paragraph summarizing this player's soccer career.
 
-RULES:
-- ONLY talk about the player’s **soccer career**
-- Write 4–6 factual sentences
-- NO bullet points, NO headings, NO lists, NO code, NO instructions
-- Stay neutral and clear
+STRICT OUTPUT RULES:
+- Write 4–6 complete factual sentences in ONE paragraph.
+- ONLY talk about the player's soccer career.
+- NO bullet points.
+- NO headings.
+- NO lists.
+- NO code, no essays, no writing instructions.
+- Do NOT repeat these rules or mention them.
 
-Player info:
+Player Bio:
 Name: {player_doc['name']}
 Position: {player_doc['position']}
 Clubs: {", ".join(player_doc['clubs'])}
 Appearances: {player_doc['appearances']}
 Goals: {player_doc['goals']}
 
-Now write the paragraph:
+Begin the summary now:
 """
 
-    # Proper chat completion call
     result = llm.create_chat_completion(
-        messages=[{"role": "user", "content": prompt}],
+        messages=[
+            {"role": "user", "content": prompt}
+        ],
         max_tokens=200,
-        temperature=0.4,
-        stop=["<|end_of_text|>"]
+        temperature=0.6,
     )
 
     summary = result["choices"][0]["message"]["content"].strip()
-    # Remove any stray formatting attempts
-    summary = summary.replace("#", "").replace("*", "").strip()
+
+    # Clean weird artifacts
+    summary = summary.replace("#", "").strip()
+    summary = summary.replace("\n", " ").strip()
+
     return summary
