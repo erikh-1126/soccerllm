@@ -5,8 +5,8 @@ from llm_client import generate_player_summary
 
 app = Flask(__name__)
 
-mongo_uri = "mongodb://localhost:27017"
-client = MongoClient(mongo_uri)
+MONGO_URI = os.getenv("MONGO_URI", "mongodb://localhost:27017")
+client = MongoClient(MONGO_URI)
 db = client["soccerdb"]
 
 @app.route("/summarize", methods=["POST"])
