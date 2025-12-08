@@ -2,7 +2,6 @@ from llama_cpp import Llama
 
 MODEL_PATH = "models/Meta-Llama-3-8B.Q4_K_M.gguf"
 
-# Load model once
 llm = Llama(
     model_path=MODEL_PATH,
     n_ctx=2048,
@@ -39,5 +38,4 @@ Write the summary now:
         stop=["<|end_of_text|>", "\n\n"]
     )
 
-    # Extract text from response
     return response["choices"][0]["message"]["content"].strip()
