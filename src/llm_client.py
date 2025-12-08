@@ -2,49 +2,46 @@ from llama_cpp import Llama
 
 MODEL_PATH = "models/Meta-Llama-3-8B.Q4_K_M.gguf"
 
-# Load the model once at startup
+# Load the model once
 llm = Llama(
     model_path=MODEL_PATH,
     n_ctx=2048,
     n_threads=6
 )
 
-
 def generate_player_summary(player_doc):
     prompt = f"""
-You are an expert soccer analyst. Write a concise paragraph summarizing this player's soccer career.
+Write a SINGLE paragraph summarizing the following soccer player's professional career.
 
-STRICT OUTPUT RULES:
-- Write 4–6 complete factual sentences in ONE paragraph.
-- ONLY talk about the player's soccer career.
-- NO bullet points.
-- NO headings.
-- NO lists.
-- NO code, no essays, no writing instructions.
-- Do NOT repeat these rules or mention them.
+• 4–6 complete sentences only.
+• Focus only on soccer career — no personal life, no opinions.
+• No lists, no bullet points, no headings, no copying the instructions.
+• Do not mention these rules.
 
-Player Bio:
+Player:
 Name: {player_doc['name']}
 Position: {player_doc['position']}
 Clubs: {", ".join(player_doc['clubs'])}
 Appearances: {player_doc['appearances']}
 Goals: {player_doc['goals']}
 
-Begin the summary now:
+Paragraph:
 """
 
-    result = llm.create_chat_completion(
-        messages=[
-            {"role": "user", "content": prompt}
-        ],
-        max_tokens=200,
-        temperature=0.6,
+    response = llm.create_chat_completion(
+        messages=[{"role": "user", "content": prompt}],
+        max_tokens=220,
+        temperature=0.4,
+        top_p=0.95,
+        frequency_penalty=0.4,
+        stop=["<|end_of_text|>"]
     )
 
-    summary = result["choices"][0]["message"]["content"].strip()
+    text = response["choices"][0]["message"]["content"]
 
-    # Clean weird artifacts
-    summary = summary.replace("#", "").strip()
-    summary = summary.replace("\n", " ").strip()
+    # Cleanup
+    text = text.split("Paragraph:")[-1].strip()
+    text = text.replace("\n", " ").replace("#", "").strip()
 
-    return summary
+    return text
+
