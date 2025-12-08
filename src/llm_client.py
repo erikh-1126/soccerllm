@@ -6,30 +6,30 @@ llm = Llama(model_path=MODEL_PATH, n_ctx=2048)
 
 def generate_player_summary(player_doc):
     prompt = f"""
-You are an expert soccer analyst. Your task is to write a concise and factual career summary for the player provided.
-Follow ALL rules below:
+You are an expert soccer analyst. Write a concise, factual, 4–6 sentence summary
+of this player's soccer career. Follow ALL rules:
 
-- ONLY write about the player's soccer career.
-- DO NOT include any chapters, essays, academic instructions, citations, or unrelated information.
-- Write 4-6 sentences in a single paragraph.
-- Do NOT add headings, bullet points, or markdown.
-- Stay factual, neutral, and concise.
+- ONLY mention the player's soccer career.
+- DO NOT include essays, instructions, citations, or formatting.
+- One paragraph only. No bullet points, no headings.
 
-Player Information:
+Player Info:
 Name: {player_doc['name']}
 Position: {player_doc['position']}
 Clubs: {", ".join(player_doc['clubs'])}
 Appearances: {player_doc['appearances']}
 Goals: {player_doc['goals']}
 
-Write the summary now:
+Now write the summary:
 """
-    result = llm.create_completion(
-        prompt=prompt,
+
+    result = llm.create_chat_completion(
+        messages=[
+            {"role": "user", "content": prompt}
+        ],
         max_tokens=200,
-        temperature=0.7,
-        stop=["<|end_of_text|>"]
+        temperature=0.6,
     )
 
-    summary = result["choices"][0]["text"].strip()
-    return summary
+    text = result["choices"][0]["message"]["content"]
+    return text.strip()
